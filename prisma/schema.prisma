@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  OWNER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum MemberStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum MembershipStatus {
+  ACTIVE
+  EXPIRED
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  CARD
+}
+
+model Gym {
+  id String @id @default(uuid())
+
+  name    String
+  phone   String
+  address String?
+  logo    String?
+
+  isActive Boolean @default(true)
+
+  users           User[]
+  members         Member[]
+  membershipPlans MembershipPlan[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id String @id @default(uuid())
+
+  gymId String
+  gym   Gym    @relation(fields: [gymId], references: [id], onDelete: Cascade)
+
+  name     String
+  email    String @unique
+  password String
+
+  role UserRole @default(OWNER)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([gymId])
+}
+
+model Member {
+  id String @id @default(uuid())
+
+  gymId String
+  gym   Gym    @relation(fields: [gymId], references: [id], onDelete: Cascade)
+
+  firstName String
+  lastName  String?
+
+  phone String
+  email String?
+
+  gender      Gender?
+  dateOfBirth DateTime?
+
+  address String?
+
+  height Float?
+  weight Float?
+
+  profileImage String?
+
+  registeredAt DateTime @default(now())
+
+  status MemberStatus @default(ACTIVE)
+
+  emergencyContactName  String?
+  emergencyContactPhone String?
+
+  notes String?
+
+  membershipHistory MemberMembership[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([gymId, phone])
+  @@index([gymId])
+  @@index([status])
+  @@index([registeredAt])
+}
+
+model MembershipPlan {
+  id String @id @default(uuid())
+
+  gymId String
+  gym   Gym    @relation(fields: [gymId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+
+  price Decimal @db.Decimal(10, 2)
+
+  durationDays Int
+
+  isActive Boolean @default(true)
+
+  memberMemberships MemberMembership[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([gymId, name])
+  @@index([gymId])
+}
+
+model MemberMembership {
+  id String @id @default(uuid())
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  membershipPlanId String
+  membershipPlan   MembershipPlan @relation(fields: [membershipPlanId], references: [id], onDelete: Cascade)
+
+  startDate DateTime
+  endDate   DateTime
+
+  amountPaid Decimal @db.Decimal(10, 2)
+
+  paymentMethod PaymentMethod
+
+  status MembershipStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([memberId])
+  @@index([membershipPlanId])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([status])
+}
