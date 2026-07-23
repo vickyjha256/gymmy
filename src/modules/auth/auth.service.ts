@@ -1,8 +1,9 @@
 import { Prisma } from "@prisma/client/extension";
 import { generateToken } from "../../common/utils/jwt";
-import { hashPassword } from "../../common/utils/password";
+import { comparePassword, hashPassword } from "../../common/utils/password";
 import prisma from "../../config/prisma";
-import { RegisterInput } from "./auth.validation";
+import { LoginInput, RegisterInput } from "./auth.validation";
+import { AppError } from "../../common/utils/AppError";
 
 
 export const register = async (data: RegisterInput) => {
@@ -16,7 +17,7 @@ export const register = async (data: RegisterInput) => {
   });
 
   if (existingUser) {
-    throw new Error("Email is already registered.");
+    throw new AppError("Email already exists", 409);
   }
 
   const hashedPassword = await hashPassword(password);
@@ -49,7 +50,7 @@ export const register = async (data: RegisterInput) => {
   });
 
   return {
-    token,
+
     user: {
       id: result.user.id,
       name: result.user.name,
@@ -62,3 +63,54 @@ export const register = async (data: RegisterInput) => {
     },
   };
 };
+
+
+
+export const login = async (data: LoginInput) => {
+  const { email, password } = data;
+
+  // Check if email exists or not
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+    include: {
+      gym: true,
+    }
+  });
+
+  if (!user) {
+    throw new AppError("Invalid email or password.", 401);
+  }
+
+  const isPasswordValid = await comparePassword(password, user.password);
+
+  if (!isPasswordValid) {
+    throw new AppError("Invalid email or password.", 401);
+  }
+  
+
+  const token = generateToken({
+    userId: user.id,
+    gymId: user.gym.id,
+    role: user.role,
+  });
+
+  return {
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+    gym: {
+      id: user.gym.id,
+      name: user.gym.name,
+    },
+  };
+};
+
+
+
+

@@ -3,20 +3,32 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
+import router from "./common/routes";
+import { errorHandler } from "./common/middleware/error.middleware";
+
 
 const app = express();
 
-app.use(helmet());
 app.use(cors());
-app.use(express.json());
-app.use(cookieParser());
+app.use(helmet());
 app.use(morgan("dev"));
+app.use(cookieParser());
 
-app.get("/health", (_, res) => {
+app.use(express.json());
+
+
+app.use(express.urlencoded({ extended: true }));
+
+app.get("/health", (_req, res) => {
   res.status(200).json({
     success: true,
-    message: "Gym Management API is running 🚀",
+    message: "Server is running",
   });
 });
+
+app.use("/api/v1", router);
+
+
+app.use(errorHandler);
 
 export default app;
