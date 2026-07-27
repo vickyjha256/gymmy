@@ -7,4 +7,9 @@ const router = Router();
 
 router.post("/", authenticate, memberController.createMember);
 
+router.get("/", authenticate, memberController.getMembers);
+
+router.get("/:id", authenticate, memberController.getMemberById);
+
+
 export default router;
