@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import * as memberService from "./member.service";
-import { createMemberSchema } from "./member.validation";
+import { createMemberSchema, updateMemberSchema } from "./member.validation";
 
 import { ParamsDictionary } from "express-serve-static-core";
 
@@ -75,6 +75,54 @@ export const getMemberById = async (
     res.status(200).json({
       success: true,
       data: member,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+export const updateMember = async (
+  req: Request<MemberParams>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const data = updateMemberSchema.parse(req.body);
+
+    const member = await memberService.updateMember(
+      req.user!.gymId,
+      req.params.id,
+      data
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Member updated successfully.",
+      data: member,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+export const deleteMember = async (
+  req: Request<MemberParams>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    await memberService.deleteMember(
+      req.user!.gymId,
+      req.params.id
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Member deleted successfully.",
     });
   } catch (error) {
     next(error);

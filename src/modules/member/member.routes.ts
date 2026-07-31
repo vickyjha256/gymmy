@@ -11,5 +11,9 @@ router.get("/", authenticate, memberController.getMembers);
 
 router.get("/:id", authenticate, memberController.getMemberById);
 
+router.put("/:id", authenticate, memberController.updateMember);
+
+router.delete("/:id", authenticate, memberController.deleteMember);
+
 
 export default router;

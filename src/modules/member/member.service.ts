@@ -3,7 +3,7 @@ import prisma from "../../config/prisma";
 
 import * as memberRepository from "./member.repository";
 
-import { CreateMemberInput } from "./member.validation";
+import { CreateMemberInput, UpdateMemberInput } from "./member.validation";
 
 export const createMember = async (
   gymId: string,
@@ -99,4 +99,45 @@ export const getMemberById = async (
   }
 
   return member;
+};
+
+
+export const updateMember = async (
+  gymId: string,
+  memberId: string,
+  data: UpdateMemberInput
+) => {
+  const member = await memberRepository.findById(memberId);
+
+  if (!member || member.gymId !== gymId) {
+    throw new AppError("Member not found.", 404);
+  }
+
+  if (data.phone && data.phone !== member.phone) {
+    const existing = await memberRepository.findByPhone(
+      gymId,
+      data.phone
+    );
+
+    if (existing) {
+      throw new AppError("Phone number already exists.", 409);
+    }
+  }
+
+  return memberRepository.update(memberId, data);
+};
+
+
+
+export const deleteMember = async (
+  gymId: string,
+  memberId: string
+) => {
+  const member = await memberRepository.findById(memberId);
+
+  if (!member || member.gymId !== gymId) {
+    throw new AppError("Member not found.", 404);
+  }
+
+  await memberRepository.remove(memberId);
 };

@@ -32,3 +32,8 @@ export const createMemberSchema = z.object({
 });
 
 export type CreateMemberInput = z.infer<typeof createMemberSchema>;
+
+
+export const updateMemberSchema = createMemberSchema.partial();
+
+export type UpdateMemberInput = z.infer<typeof updateMemberSchema>;
