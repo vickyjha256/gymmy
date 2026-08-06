@@ -63,6 +63,7 @@ export const updateMembershipPlan = async (
   return membershipPlanRepository.update(planId, data);
 };
 
+
 export const deleteMembershipPlan = async (
   gymId: string,
   planId: string
@@ -71,6 +72,15 @@ export const deleteMembershipPlan = async (
 
   if (!plan || plan.gymId !== gymId) {
     throw new AppError("Membership plan not found.", 404);
+  }
+
+  const usageCount = await membershipPlanRepository.countMemberships(planId);
+
+  if (usageCount > 0) {
+    throw new AppError(
+      "This membership plan is already assigned to members. Deactivate it instead of deleting.",
+      400
+    );
   }
 
   await membershipPlanRepository.remove(planId);

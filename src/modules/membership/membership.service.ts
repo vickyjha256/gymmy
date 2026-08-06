@@ -1,0 +1,64 @@
+import { MembershipStatus } from "@prisma/client";
+
+import * as membershipRepository from "./membership.repository";
+import { CreateMembershipInput } from "./membership.validation";
+import { AppError } from "../../common/utils/AppError";
+
+import * as memberRepository from "../member/member.repository";
+import * as membershipPlanRepository from "../membership-plan/membershipPlan.repository";
+
+export const createMembership = async (
+  gymId: string,
+  data: CreateMembershipInput
+) => {
+  const member = await memberRepository.findById(data.memberId);
+
+  if (!member || member.gymId !== gymId) {
+    throw new AppError("Member not found.", 404);
+  }
+
+  const plan = await membershipPlanRepository.findById(data.membershipPlanId);
+
+  if (!plan || plan.gymId !== gymId) {
+    throw new AppError("Membership plan not found.", 404);
+  }
+
+  if (!plan.isActive) {
+    throw new AppError("Membership plan is inactive.", 400);
+  }
+
+  const activeMembership =
+    await membershipRepository.findActiveMembership(member.id);
+
+  if (activeMembership) {
+    throw new AppError(
+      "Member already has an active membership.",
+      409
+    );
+  }
+
+  const startDate = new Date();
+
+  const endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + plan.durationDays);
+
+  return membershipRepository.create({
+    startDate,
+    endDate,
+    amountPaid: plan.price,
+    paymentMethod: data.paymentMethod,
+    status: MembershipStatus.ACTIVE,
+
+    member: {
+      connect: {
+        id: member.id,
+      },
+    },
+
+    membershipPlan: {
+      connect: {
+        id: plan.id,
+      },
+    },
+  });
+};

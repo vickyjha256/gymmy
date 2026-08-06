@@ -57,3 +57,11 @@ export const remove = (id: string) => {
     },
   });
 };
+
+export const countMemberships = (planId: string) => {
+  return prisma.memberMembership.count({
+    where: {
+      membershipPlanId: planId,
+    },
+  });
+};
