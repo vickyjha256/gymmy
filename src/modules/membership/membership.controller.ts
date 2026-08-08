@@ -25,3 +25,29 @@ export const createMembership = async (
     next(error);
   }
 };
+
+
+type MembershipParams = {
+  memberId: string;
+};
+
+export const getMembershipHistory = async (
+  req: Request<MembershipParams>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const memberships =
+      await membershipService.getMembershipHistory(
+        req.user!.gymId,
+        req.params.memberId
+      );
+
+    res.status(200).json({
+      success: true,
+      data: memberships,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

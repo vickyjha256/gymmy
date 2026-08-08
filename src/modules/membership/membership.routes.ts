@@ -10,4 +10,13 @@ router.post(
   membershipController.createMembership
 );
 
+
+router.get(
+  "/member/:memberId",
+  authenticate,
+  membershipController.getMembershipHistory
+);
+
+
+
 export default router;

@@ -62,3 +62,17 @@ export const createMembership = async (
     },
   });
 };
+
+
+export const getMembershipHistory = async (
+  gymId: string,
+  memberId: string
+) => {
+  const member = await memberRepository.findById(memberId);
+
+  if (!member || member.gymId !== gymId) {
+    throw new AppError("Member not found.", 404);
+  }
+
+  return membershipRepository.findByMember(memberId);
+};

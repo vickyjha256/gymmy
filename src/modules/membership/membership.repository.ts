@@ -31,3 +31,17 @@ export const update = (
     data,
   });
 };
+
+export const findByMember = (memberId: string) => {
+  return prisma.memberMembership.findMany({
+    where: {
+      memberId,
+    },
+    include: {
+      membershipPlan: true,
+    },
+    orderBy: {
+      startDate: "desc",
+    },
+  });
+};
