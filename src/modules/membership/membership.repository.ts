@@ -45,3 +45,37 @@ export const findByMember = (memberId: string) => {
     },
   });
 };
+
+export const findActiveMembershipByMember = (
+  memberId: string
+) => {
+  return prisma.memberMembership.findFirst({
+    where: {
+      memberId,
+      status: "ACTIVE",
+    },
+    orderBy: {
+      endDate: "desc",
+    },
+  });
+};
+
+export const renew = async (
+  membershipId: string,
+  data: Prisma.MemberMembershipCreateInput
+) => {
+  return prisma.$transaction(async (tx) => {
+    await tx.memberMembership.update({
+      where: {
+        id: membershipId,
+      },
+      data: {
+        status: "EXPIRED",
+      },
+    });
+
+    return tx.memberMembership.create({
+      data,
+    });
+  });
+};
