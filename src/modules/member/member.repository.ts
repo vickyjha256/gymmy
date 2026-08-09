@@ -7,7 +7,24 @@ export const create = (data: Prisma.MemberCreateInput) => {
 
 export const findById = (id: string) => {
   return prisma.member.findUnique({
-    where: { id },
+    where: {
+      id,
+    },
+    include: {
+      membershipHistory: {
+        where: {
+          status: {
+            in: ["ACTIVE", "UPCOMING"],
+          },
+        },
+        include: {
+          membershipPlan: true,
+        },
+        orderBy: {
+          startDate: "asc",
+        },
+      },
+    },
   });
 };
 

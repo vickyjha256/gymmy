@@ -40,7 +40,7 @@ export const createMembership = async (
   const startDate = new Date();
 
   const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + plan.durationDays);
+  endDate.setDate(endDate.getDate() + plan.durationDays - 1);
 
   return membershipRepository.create({
     startDate,
@@ -77,6 +77,8 @@ export const getMembershipHistory = async (
   return membershipRepository.findByMember(memberId);
 };
 
+
+
 export const renewMembership = async (
   gymId: string,
   memberId: string,
@@ -100,48 +102,69 @@ export const renewMembership = async (
     throw new AppError("Membership plan is inactive.", 400);
   }
 
+  // Don't allow multiple advance renewals
+  const upcomingMembership =
+    await membershipRepository.findUpcomingMembership(memberId);
+
+  if (upcomingMembership) {
+    throw new AppError(
+      "Member already has an upcoming membership.",
+      409
+    );
+  }
+
   const currentMembership =
     await membershipRepository.findActiveMembershipByMember(
       memberId
     );
 
-  if (!currentMembership) {
-    throw new AppError(
-      "Member does not have an active membership.",
-      400
-    );
+  const now = new Date();
+
+  let startDate: Date;
+  let status: "ACTIVE" | "UPCOMING";
+
+  if (currentMembership && currentMembership.endDate >= now) {
+    // Current membership is still active.
+    // New membership starts the next day.
+    startDate = new Date(currentMembership.endDate);
+    startDate.setDate(startDate.getDate() + 1);
+
+    status = "UPCOMING";
+  } else {
+    // No active membership or current membership has expired.
+    startDate = now;
+
+    status = "ACTIVE";
   }
 
-  const today = new Date();
-
-  const startDate =
-    currentMembership.endDate > today
-      ? new Date(currentMembership.endDate)
-      : today;
-
   const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + plan.durationDays);
 
-  return membershipRepository.renew(
-    currentMembership.id,
-    {
-      startDate,
-      endDate,
-      amountPaid: plan.price,
-      paymentMethod: data.paymentMethod,
-      status: "ACTIVE",
-
-      member: {
-        connect: {
-          id: memberId,
-        },
-      },
-
-      membershipPlan: {
-        connect: {
-          id: plan.id,
-        },
-      },
-    }
+  endDate.setDate(
+    endDate.getDate() + plan.durationDays - 1
   );
+
+  return membershipRepository.renew({
+    startDate,
+    endDate,
+    amountPaid: plan.price,
+    paymentMethod: data.paymentMethod,
+    status,
+
+    member: {
+      connect: {
+        id: memberId,
+      },
+    },
+
+    membershipPlan: {
+      connect: {
+        id: plan.id,
+      },
+    },
+  });
 };
+
+export const updateMembershipStatuses = async () => {
+  return membershipRepository.updateMembershipStatuses();
+};
+

@@ -3,6 +3,7 @@ import authRoutes from "../modules/auth/auth.routes";
 import memberRoutes from "../modules/member/member.routes";
 import membershipPlanRoutes from "../modules/membership-plan/membershipPlan.routes";
 import membershipRoutes from "../modules/membership/membership.routes";
+import dashboardRoutes from "../modules/dashboard/dashboard.routes";
 
 const router = Router();
 
@@ -10,5 +11,7 @@ router.use("/auth", authRoutes);
 router.use("/members", memberRoutes);
 router.use("/membership-plans", membershipPlanRoutes);
 router.use("/memberships", membershipRoutes);
+
+router.use("/dashboard", dashboardRoutes);
 
 export default router;

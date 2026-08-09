@@ -60,22 +60,62 @@ export const findActiveMembershipByMember = (
   });
 };
 
-export const renew = async (
-  membershipId: string,
+export const findUpcomingMembership = (memberId: string) => {
+  return prisma.memberMembership.findFirst({
+    where: {
+      memberId,
+      status: "UPCOMING",
+    },
+    orderBy: {
+      startDate: "asc",
+    },
+  });
+};
+
+
+
+
+export const renew = (
   data: Prisma.MemberMembershipCreateInput
 ) => {
-  return prisma.$transaction(async (tx) => {
-    await tx.memberMembership.update({
+  return prisma.memberMembership.create({
+    data,
+  });
+};
+
+
+
+export const updateMembershipStatuses = async () => {
+  const now = new Date();
+
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    // Expire memberships whose end date has passed
+    await tx.memberMembership.updateMany({
       where: {
-        id: membershipId,
+        status: "ACTIVE",
+        endDate: {
+          lt: now,
+        },
       },
       data: {
         status: "EXPIRED",
       },
     });
 
-    return tx.memberMembership.create({
-      data,
+    // Activate upcoming memberships whose start date has arrived
+    await tx.memberMembership.updateMany({
+      where: {
+        status: "UPCOMING",
+        startDate: {
+          lte: now,
+        },
+      },
+      data: {
+        status: "ACTIVE",
+      },
     });
   });
 };
+
+
+

@@ -17,6 +17,11 @@ router.get(
   membershipController.getMembershipHistory
 );
 
+router.post(
+  "/renew/:memberId",
+  authenticate,
+  membershipController.renewMembership
+);
 
 
 export default router;
