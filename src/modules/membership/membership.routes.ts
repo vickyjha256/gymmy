@@ -23,5 +23,11 @@ router.post(
   membershipController.renewMembership
 );
 
+router.get(
+  "/upcoming-expiring",
+  authenticate,
+  membershipController.getUpcomingAndExpiringMemberships
+);
+
 
 export default router;

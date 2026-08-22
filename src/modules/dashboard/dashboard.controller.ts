@@ -19,3 +19,39 @@ export const getDashboardStats = async (
     next(error);
   }
 };
+
+
+export const getRevenueStats = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const now = new Date();
+
+    const startDate = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      1
+    );
+
+    const endDate = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      1
+    );
+
+    const revenue = await dashboardService.getRevenueStats(
+      req.user!.gymId,
+      startDate,
+      endDate
+    );
+
+    res.status(200).json({
+      success: true,
+      data: revenue,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

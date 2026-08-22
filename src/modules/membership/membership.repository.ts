@@ -119,3 +119,41 @@ export const updateMembershipStatuses = async () => {
 
 
 
+export const findUpcomingAndExpiring = async (
+  gymId: string,
+  days: number
+) => {
+  const now = new Date();
+
+  const expiryLimit = new Date(now);
+  expiryLimit.setDate(expiryLimit.getDate() + days);
+
+  return prisma.memberMembership.findMany({
+    where: {
+      member: {
+        gymId,
+      },
+      OR: [
+        {
+          status: "UPCOMING",
+        },
+        {
+          status: "ACTIVE",
+          endDate: {
+            gte: now,
+            lte: expiryLimit,
+          },
+        },
+      ],
+    },
+    include: {
+      member: true,
+      membershipPlan: true,
+    },
+    orderBy: {
+      startDate: "asc",
+    },
+  });
+};
+
+

@@ -10,4 +10,11 @@ router.get(
   dashboardController.getDashboardStats
 );
 
+router.get(
+  "/revenue",
+  authenticate,
+  dashboardController.getRevenueStats
+);
+
+
 export default router;

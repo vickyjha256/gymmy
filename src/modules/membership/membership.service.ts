@@ -168,3 +168,14 @@ export const updateMembershipStatuses = async () => {
   return membershipRepository.updateMembershipStatuses();
 };
 
+
+
+export const getUpcomingAndExpiringMemberships = async (
+  gymId: string,
+  days: number
+) => {
+  return membershipRepository.findUpcomingAndExpiring(
+    gymId,
+    days
+  );
+};
