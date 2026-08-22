@@ -9,11 +9,15 @@ router.post("/", authenticate, memberController.createMember);
 
 router.get("/", authenticate, memberController.getMembers);
 
+// Note:- Kept "/search" endpoint before "/:id". Because, else Express treats "search" as id.
+router.get("/search", authenticate, memberController.searchMembers);
+
 router.get("/:id", authenticate, memberController.getMemberById);
 
 router.put("/:id", authenticate, memberController.updateMember);
 
 router.delete("/:id", authenticate, memberController.deleteMember);
+
 
 
 export default router;

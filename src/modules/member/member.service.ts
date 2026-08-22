@@ -36,56 +36,24 @@ export const getMembers = async (
   limit: number,
   search?: string
 ) => {
-  const skip = (page - 1) * limit;
+  if (page < 1) {
+    throw new AppError("Page must be at least 1.", 400);
+  }
 
-  const where = {
+  if (limit < 1 || limit > 100) {
+    throw new AppError(
+      "Limit must be between 1 and 100.",
+      400
+    );
+  }
+
+  return memberRepository.findMembers(
     gymId,
-    ...(search && {
-      OR: [
-        {
-          firstName: {
-            contains: search,
-            mode: "insensitive" as const,
-          },
-        },
-        {
-          lastName: {
-            contains: search,
-            mode: "insensitive" as const,
-          },
-        },
-        {
-          phone: {
-            contains: search,
-          },
-        },
-      ],
-    }),
-  };
-
-  const [members, total] = await prisma.$transaction([
-    prisma.member.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: {
-        createdAt: "desc",
-      },
-    }),
-    prisma.member.count({ where }),
-  ]);
-
-  return {
-    members,
-    pagination: {
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
+    page,
+    limit,
+    search
+  );
 };
-
 
 
 export const getMemberById = async (
@@ -141,3 +109,23 @@ export const deleteMember = async (
 
   await memberRepository.remove(memberId);
 };
+
+
+export const searchMembers = async (
+  gymId: string,
+  search: string
+) => {
+  if (!search.trim()) {
+    throw new AppError(
+      "Search query is required.",
+      400
+    );
+  }
+
+  return memberRepository.searchMembers(
+    gymId,
+    search.trim()
+  );
+};
+
+

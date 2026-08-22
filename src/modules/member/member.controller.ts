@@ -41,7 +41,8 @@ export const getMembers = async (
   try {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
-    const search = req.query.search as string | undefined;
+    const search = req.query.search ? String(req.query.search) : undefined;
+    
 
     const result = await memberService.getMembers(
       req.user!.gymId,
@@ -123,6 +124,28 @@ export const deleteMember = async (
     res.status(200).json({
       success: true,
       message: "Member deleted successfully.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const searchMembers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const search = String(req.query.search || "");
+
+    const members = await memberService.searchMembers(
+      req.user!.gymId,
+      search
+    );
+
+    res.status(200).json({
+      success: true,
+      data: members,
     });
   } catch (error) {
     next(error);
