@@ -107,7 +107,11 @@ export const deleteMember = async (
     throw new AppError("Member not found.", 404);
   }
 
-  await memberRepository.remove(memberId);
+  if (member.status === "INACTIVE") {
+    throw new AppError("Member is already inactive.", 400);
+  }
+
+  await memberRepository.deactivate(memberId);
 };
 
 

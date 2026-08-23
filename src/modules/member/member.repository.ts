@@ -246,3 +246,15 @@ export const findMembers = async (
     },
   };
 };
+
+
+export const deactivate = (memberId: string) => {
+  return prisma.member.update({
+    where: {
+      id: memberId,
+    },
+    data: {
+      status: "INACTIVE",
+    },
+  });
+};
