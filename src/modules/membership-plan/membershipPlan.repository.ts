@@ -65,3 +65,26 @@ export const countMemberships = (planId: string) => {
     },
   });
 };
+
+export const deactivate = (id: string) => {
+  return prisma.membershipPlan.update({
+    where: {
+      id,
+    },
+    data: {
+      isActive: false,
+    },
+  });
+};
+
+export const activate = (id: string) => {
+  return prisma.membershipPlan.update({
+    where: {
+      id,
+    },
+    data: {
+      isActive: true,
+    },
+  });
+};
+

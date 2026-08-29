@@ -3,6 +3,17 @@ import * as membershipService from "./membership.service";
 import { createMembershipSchema, renewMembershipSchema } from "./membership.validation";
 import { AppError } from "../../common/utils/AppError";
 
+
+type MembershipParams = {
+  memberId: string;
+  membershipId: string;
+};
+
+type CancelMembershipParams = {
+  membershipId: string;
+};
+
+
 export const createMembership = async (
   req: Request,
   res: Response,
@@ -28,9 +39,6 @@ export const createMembership = async (
 };
 
 
-type MembershipParams = {
-  memberId: string;
-};
 
 export const getMembershipHistory = async (
   req: Request<MembershipParams>,
@@ -107,6 +115,50 @@ export const getUpcomingAndExpiringMemberships = async (
     res.status(200).json({
       success: true,
       data: memberships,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const cancelMembership = async (
+  req: Request<CancelMembershipParams>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const membership =
+      await membershipService.cancelMembership(
+        req.user!.gymId,
+        req.params.membershipId
+      );
+
+    res.status(200).json({
+      success: true,
+      message: "Membership cancelled successfully.",
+      data: membership,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+export const getMembershipById = async (
+  req: Request<MembershipParams>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const membership =
+      await membershipService.getMembershipById(
+        req.user!.gymId,
+        req.params.membershipId
+      );
+
+    res.status(200).json({
+      success: true,
+      data: membership,
     });
   } catch (error) {
     next(error);

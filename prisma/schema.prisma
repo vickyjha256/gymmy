@@ -26,6 +26,7 @@ enum MembershipStatus {
   UPCOMING
   ACTIVE
   EXPIRED
+  CANCELLED
 }
 
 enum PaymentMethod {

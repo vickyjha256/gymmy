@@ -156,4 +156,42 @@ export const findUpcomingAndExpiring = async (
   });
 };
 
+export const findById = (membershipId: string) => {
+  return prisma.memberMembership.findUnique({
+    where: {
+      id: membershipId,
+    },
+    include: {
+      member: true,
+      membershipPlan: true,
+    },
+  });
+};
 
+
+export const cancel = (membershipId: string) => {
+  return prisma.memberMembership.update({
+    where: {
+      id: membershipId,
+    },
+    data: {
+      status: "CANCELLED",
+    },
+  });
+};
+
+export const findLatestMembershipByMember = (
+  memberId: string
+) => {
+  return prisma.memberMembership.findFirst({
+    where: {
+      memberId,
+      status: {
+        in: ["ACTIVE", "UPCOMING"],
+      },
+    },
+    orderBy: {
+      endDate: "desc",
+    },
+  });
+};

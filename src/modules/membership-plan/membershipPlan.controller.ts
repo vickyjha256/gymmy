@@ -94,3 +94,25 @@ export const deleteMembershipPlan = async (
     next(error);
   }
 };
+
+export const activateMembershipPlan = async (
+  req: Request<PlanParams>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const plan =
+      await membershipPlanService.activateMembershipPlan(
+        req.user!.gymId,
+        req.params.id
+      );
+
+    res.status(200).json({
+      success: true,
+      message: "Membership plan activated successfully.",
+      data: plan,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

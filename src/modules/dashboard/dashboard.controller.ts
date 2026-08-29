@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import * as dashboardService from "./dashboard.service";
+import { AppError } from "../../common/utils/AppError";
 
 export const getDashboardStats = async (
   req: Request,
@@ -20,7 +21,6 @@ export const getDashboardStats = async (
   }
 };
 
-
 export const getRevenueStats = async (
   req: Request,
   res: Response,
@@ -29,27 +29,48 @@ export const getRevenueStats = async (
   try {
     const now = new Date();
 
-    const startDate = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      1
-    );
+    const from = req.query.from
+      ? new Date(String(req.query.from))
+      : new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const endDate = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      1
-    );
+    const to = req.query.to
+      ? new Date(String(req.query.to))
+      : new Date(
+          now.getFullYear(),
+          now.getMonth() + 1,
+          1
+        );
+
+    if (
+      Number.isNaN(from.getTime()) ||
+      Number.isNaN(to.getTime())
+    ) {
+      throw new AppError(
+        "Invalid date format. Use YYYY-MM-DD.",
+        400
+      );
+    }
+
+    if (from >= to) {
+      throw new AppError(
+        "From date must be before to date.",
+        400
+      );
+    }
 
     const revenue = await dashboardService.getRevenueStats(
       req.user!.gymId,
-      startDate,
-      endDate
+      from,
+      to
     );
 
     res.status(200).json({
       success: true,
-      data: revenue,
+      data: {
+        from,
+        to,
+        ...revenue,
+      },
     });
   } catch (error) {
     next(error);

@@ -1,30 +1,22 @@
 import { Router } from "express";
 import { authenticate, authorize } from "../../common/middleware/auth.middleware";
-import * as userController from "./user.controller";
+import * as gymController from "./gym.controller";
 import { UserRole } from "@prisma/client";
 
 const router = Router();
 
 router.get(
-  "/me",
+  "/",
   authenticate,
   authorize(UserRole.OWNER),
-  userController.getProfile
+  gymController.getGym
 );
 
 router.patch(
-  "/me",
+  "/",
   authenticate,
   authorize(UserRole.OWNER),
-  userController.updateProfile
+  gymController.updateGym
 );
-
-router.patch(
-  "/change-password",
-  authenticate,
-  authorize(UserRole.OWNER),
-  userController.changePassword
-);
-
 
 export default router;

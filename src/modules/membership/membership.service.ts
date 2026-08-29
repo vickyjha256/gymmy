@@ -113,8 +113,8 @@ export const renewMembership = async (
     );
   }
 
-  const currentMembership =
-    await membershipRepository.findActiveMembershipByMember(
+  const latestMembership =
+    await membershipRepository.findLatestMembershipByMember(
       memberId
     );
 
@@ -123,10 +123,10 @@ export const renewMembership = async (
   let startDate: Date;
   let status: "ACTIVE" | "UPCOMING";
 
-  if (currentMembership && currentMembership.endDate >= now) {
+  if (latestMembership && latestMembership.endDate >= now) {
     // Current membership is still active.
     // New membership starts the next day.
-    startDate = new Date(currentMembership.endDate);
+    startDate = new Date(latestMembership.endDate);
     startDate.setDate(startDate.getDate() + 1);
 
     status = "UPCOMING";
@@ -178,4 +178,54 @@ export const getUpcomingAndExpiringMemberships = async (
     gymId,
     days
   );
+};
+
+export const cancelMembership = async (
+  gymId: string,
+  membershipId: string
+) => {
+  const membership =
+    await membershipRepository.findById(membershipId);
+
+  if (!membership) {
+    throw new AppError("Membership not found.", 404);
+  }
+
+  // Make sure this membership belongs to the logged-in gym.
+  const member = await memberRepository.findById(
+    membership.memberId
+  );
+
+  if (!member || member.gymId !== gymId) {
+    throw new AppError("Membership not found.", 404);
+  }
+
+  if (
+    membership.status !== "ACTIVE" &&
+    membership.status !== "UPCOMING"
+  ) {
+    throw new AppError(
+      "Only active or upcoming memberships can be cancelled.",
+      400
+    );
+  }
+
+  return membershipRepository.cancel(membershipId);
+};
+
+export const getMembershipById = async (
+  gymId: string,
+  membershipId: string
+) => {
+  const membership =
+    await membershipRepository.findById(membershipId);
+
+  if (
+    !membership ||
+    membership.member.gymId !== gymId
+  ) {
+    throw new AppError("Membership not found.", 404);
+  }
+
+  return membership;
 };

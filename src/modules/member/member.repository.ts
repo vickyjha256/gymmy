@@ -258,3 +258,11 @@ export const deactivate = (memberId: string) => {
     },
   });
 };
+
+export const countMemberships = (memberId: string) => {
+  return prisma.memberMembership.count({
+    where: {
+      memberId,
+    },
+  });
+};

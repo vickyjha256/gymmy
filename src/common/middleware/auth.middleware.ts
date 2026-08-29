@@ -3,6 +3,8 @@ import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 
 import { verifyToken } from "../utils/jwt";
 import { AppError } from "../utils/AppError";
+import { UserRole } from "@prisma/client";
+
 
 export const authenticate = (
   req: Request,
@@ -38,4 +40,23 @@ export const authenticate = (
 
     next(error);
   }
+};
+
+
+export const authorize = (...allowedRoles: UserRole[]) => {
+  return (
+    req: Request,
+    _res: Response,
+    next: NextFunction
+  ) => {
+    if (!req.user) {
+      return next(new AppError("Unauthorized", 401));
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      return next(new AppError("Forbidden", 403));
+    }
+
+    next();
+  };
 };

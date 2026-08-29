@@ -1,6 +1,11 @@
 import prisma from "../../config/prisma";
 
 export const getDashboardStats = async (gymId: string) => {
+  const now = new Date();
+
+  const expiryLimit = new Date(now);
+  expiryLimit.setDate(expiryLimit.getDate() + 7);
+
   const [
     totalMembers,
     activeMembers,
@@ -8,6 +13,7 @@ export const getDashboardStats = async (gymId: string) => {
     activeMemberships,
     expiredMemberships,
     upcomingMemberships,
+    expiringMemberships,
   ] = await Promise.all([
     prisma.member.count({
       where: {
@@ -55,6 +61,19 @@ export const getDashboardStats = async (gymId: string) => {
         status: "UPCOMING",
       },
     }),
+
+    prisma.memberMembership.count({
+      where: {
+        member: {
+          gymId,
+        },
+        status: "ACTIVE",
+        endDate: {
+          gte: now,
+          lte: expiryLimit,
+        },
+      },
+    }),
   ]);
 
   return {
@@ -64,9 +83,9 @@ export const getDashboardStats = async (gymId: string) => {
     activeMemberships,
     expiredMemberships,
     upcomingMemberships,
+    expiringMemberships,
   };
 };
-
 
 export const getRevenueStats = async (
   gymId: string,
