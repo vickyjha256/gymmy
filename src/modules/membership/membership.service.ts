@@ -113,55 +113,16 @@ export const renewMembership = async (
     );
   }
 
-  const latestMembership =
-    await membershipRepository.findLatestMembershipByMember(
-      memberId
-    );
-
-  const now = new Date();
-
-  let startDate: Date;
-  let status: "ACTIVE" | "UPCOMING";
-
-  if (latestMembership && latestMembership.endDate >= now) {
-    // Current membership is still active.
-    // New membership starts the next day.
-    startDate = new Date(latestMembership.endDate);
-    startDate.setDate(startDate.getDate() + 1);
-
-    status = "UPCOMING";
-  } else {
-    // No active membership or current membership has expired.
-    startDate = now;
-
-    status = "ACTIVE";
-  }
-
-  const endDate = new Date(startDate);
-
-  endDate.setDate(
-    endDate.getDate() + plan.durationDays - 1
+  return membershipRepository.renewWithTransaction(
+    memberId,
+    plan.id,
+    data.paymentMethod,
+    plan.durationDays,
+    plan.price
   );
 
-  return membershipRepository.renew({
-    startDate,
-    endDate,
-    amountPaid: plan.price,
-    paymentMethod: data.paymentMethod,
-    status,
-
-    member: {
-      connect: {
-        id: memberId,
-      },
-    },
-
-    membershipPlan: {
-      connect: {
-        id: plan.id,
-      },
-    },
-  });
+  
+  
 };
 
 export const updateMembershipStatuses = async () => {
@@ -184,22 +145,18 @@ export const cancelMembership = async (
   gymId: string,
   membershipId: string
 ) => {
+  
   const membership =
-    await membershipRepository.findById(membershipId);
+  await membershipRepository.findByIdForGym(
+    membershipId,
+    gymId
+  );
 
   if (!membership) {
     throw new AppError("Membership not found.", 404);
   }
 
-  // Make sure this membership belongs to the logged-in gym.
-  const member = await memberRepository.findById(
-    membership.memberId
-  );
-
-  if (!member || member.gymId !== gymId) {
-    throw new AppError("Membership not found.", 404);
-  }
-
+  
   if (
     membership.status !== "ACTIVE" &&
     membership.status !== "UPCOMING"

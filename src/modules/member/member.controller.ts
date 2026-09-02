@@ -39,8 +39,8 @@ export const getMembers = async (
   next: NextFunction
 ) => {
   try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
     const search = req.query.search ? String(req.query.search) : undefined;
     
 

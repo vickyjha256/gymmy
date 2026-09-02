@@ -64,3 +64,37 @@ export const updatePassword = (
     },
   });
 };
+
+
+
+export const updateProfile = async (
+  userId: string,
+  gymId: string,
+  userData: {
+    name?: string;
+    email?: string;
+  },
+  gymData: {
+    name?: string;
+    phone?: string;
+    address?: string;
+    logo?: string;
+  }
+) => {
+  return prisma.$transaction(async (tx) => {
+    const updatedUser = await tx.user.update({
+      where: { id: userId },
+      data: userData,
+    });
+
+    const updatedGym = await tx.gym.update({
+      where: { id: gymId },
+      data: gymData,
+    });
+
+    return {
+      updatedUser,
+      updatedGym,
+    };
+  });
+};

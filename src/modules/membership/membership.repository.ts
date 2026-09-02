@@ -168,6 +168,24 @@ export const findById = (membershipId: string) => {
   });
 };
 
+export const findByIdForGym = (
+  membershipId: string,
+  gymId: string
+) => {
+  return prisma.memberMembership.findFirst({
+    where: {
+      id: membershipId,
+      member: {
+        gymId,
+      },
+    },
+    include: {
+      member: true,
+      membershipPlan: true,
+    },
+  });
+};
+
 
 export const cancel = (membershipId: string) => {
   return prisma.memberMembership.update({
@@ -193,5 +211,60 @@ export const findLatestMembershipByMember = (
     orderBy: {
       endDate: "desc",
     },
+  });
+};
+
+export const renewWithTransaction = async (
+  memberId: string,
+  membershipPlanId: string,
+  paymentMethod: Prisma.MemberMembershipCreateInput["paymentMethod"],
+  durationDays: number,
+  amountPaid: Prisma.Decimal
+) => {
+  return prisma.$transaction(async (tx) => {
+    const latestMembership = await tx.memberMembership.findFirst({
+      where: {
+        memberId,
+        status: {
+          in: ["ACTIVE", "UPCOMING"],
+        },
+      },
+      orderBy: {
+        endDate: "desc",
+      },
+    });
+
+    const now = new Date();
+
+    let startDate: Date;
+    let status: "ACTIVE" | "UPCOMING";
+
+    if (latestMembership && latestMembership.endDate > now) {
+      startDate = new Date(latestMembership.endDate);
+      startDate.setDate(startDate.getDate() + 1);
+      status = "UPCOMING";
+    } else {
+      startDate = now;
+      status = "ACTIVE";
+    }
+
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + durationDays - 1);
+
+    return tx.memberMembership.create({
+      data: {
+        startDate,
+        endDate,
+        amountPaid,
+        paymentMethod,
+        status,
+        member: {
+          connect: { id: memberId },
+        },
+        membershipPlan: {
+          connect: { id: membershipPlanId },
+        },
+      },
+    });
   });
 };

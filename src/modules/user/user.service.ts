@@ -47,16 +47,14 @@ export const updateProfile = async (
     }
   }
 
-  const updatedUser = await userRepository.updateUser(
+  const { updatedUser, updatedGym } =
+  await userRepository.updateProfile(
     userId,
+    gymId,
     {
       name: data.name,
       email: data.email,
-    }
-  );
-
-  const updatedGym = await userRepository.updateGym(
-    gymId,
+    },
     {
       name: data.gymName,
       phone: data.phone,
