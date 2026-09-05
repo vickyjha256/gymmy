@@ -13,7 +13,7 @@ export const createMemberSchema = z.object({
 
   gender: z.enum(["MALE", "FEMALE", "OTHER"]).optional(),
 
-  dateOfBirth: z.coerce.date().optional(),
+  dateOfBirth: z.coerce.date().max(new Date(), "Date of birth cannot be in the future").optional(),
 
   address: z.string().trim().optional(),
 
