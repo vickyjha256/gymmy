@@ -110,7 +110,6 @@ model Member {
   updatedAt DateTime @updatedAt
 
   @@unique([gymId, phone])
-  @@index([gymId])
   @@index([status])
   @@index([registeredAt])
 }
@@ -136,7 +135,6 @@ model MembershipPlan {
   updatedAt DateTime @updatedAt
 
   @@unique([gymId, name])
-  @@index([gymId])
 }
 
 model MemberMembership {

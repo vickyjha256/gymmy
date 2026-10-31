@@ -68,25 +68,25 @@ export const deleteMembershipPlan = async (
   gymId: string,
   planId: string
 ) => {
-  const plan =
-    await membershipPlanRepository.findById(planId);
+  const plan = await membershipPlanRepository.findById(planId);
 
   if (!plan || plan.gymId !== gymId) {
-    throw new AppError(
-      "Membership plan not found.",
-      404
-    );
+    throw new AppError("Membership plan not found.", 404);
   }
 
-  if (!plan.isActive) {
+  const membershipCount =
+    await membershipPlanRepository.countMemberships(planId);
+
+  if (membershipCount > 0) {
     throw new AppError(
-      "Membership plan is already inactive.",
+      "This membership plan is already assigned to members. Deactivate it instead of deleting.",
       400
     );
   }
 
-  return membershipPlanRepository.deactivate(planId);
+  return membershipPlanRepository.remove(planId);
 };
+
 
 export const activateMembershipPlan = async (
   gymId: string,

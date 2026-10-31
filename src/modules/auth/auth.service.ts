@@ -50,7 +50,7 @@ export const register = async (data: RegisterInput) => {
   });
 
   return {
-
+    token,
     user: {
       id: result.user.id,
       name: result.user.name,

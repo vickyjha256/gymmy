@@ -97,7 +97,8 @@ export const getUpcomingAndExpiringMemberships = async (
   next: NextFunction
 ) => {
   try {
-    const days = Number(req.query.days) || 7;
+    // const days = Number(req.query.days) || 7;
+    const days = req.query.days !== undefined ? Number(req.query.days) : 7;
 
     if (days < 1 || days > 30) {
       throw new AppError(

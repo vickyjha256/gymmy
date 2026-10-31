@@ -34,6 +34,40 @@ export const createMemberSchema = z.object({
 export type CreateMemberInput = z.infer<typeof createMemberSchema>;
 
 
-export const updateMemberSchema = createMemberSchema.partial();
+
+
+export const updateMemberSchema = createMemberSchema.partial().extend({
+  lastName: z.string().trim().max(50).nullable().optional(),
+
+  email: z.email().trim().toLowerCase().nullable().optional(),
+
+  gender: z.enum(["MALE", "FEMALE", "OTHER"]).nullable().optional(),
+
+  dateOfBirth: z.coerce
+    .date()
+    .max(new Date(), "Date of birth cannot be in the future")
+    .nullable()
+    .optional(),
+
+  address: z.string().trim().nullable().optional(),
+
+  height: z.number().positive().nullable().optional(),
+
+  weight: z.number().positive().nullable().optional(),
+
+  emergencyContactName: z.string().trim().nullable().optional(),
+
+  emergencyContactPhone: z
+    .string()
+    .regex(/^[6-9]\d{9}$/, "Invalid phone number")
+    .nullable()
+    .optional(),
+
+  notes: z.string().trim().nullable().optional(),
+
+  status: z.enum(["ACTIVE", "INACTIVE"]).optional(),
+});
+
+
 
 export type UpdateMemberInput = z.infer<typeof updateMemberSchema>;
