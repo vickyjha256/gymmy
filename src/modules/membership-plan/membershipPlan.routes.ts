@@ -25,4 +25,13 @@ router.patch(
   membershipPlanController.activateMembershipPlan
 );
 
+router.patch(
+  "/:id/deactivate",
+  authenticate,
+  authorize(UserRole.OWNER),
+  membershipPlanController.deactivateMembershipPlan
+);
+
+
+
 export default router;

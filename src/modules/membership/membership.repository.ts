@@ -1,5 +1,5 @@
 import prisma from "../../config/prisma";
-import { Prisma } from "@prisma/client";
+import { MembershipStatus, Prisma } from "@prisma/client";
 
 export const create = (
   data: Prisma.MemberMembershipCreateInput
@@ -266,5 +266,28 @@ export const renewWithTransaction = async (
         },
       },
     });
+  });
+};
+
+
+
+export const findAllByGym = (
+  gymId: string,
+  status?: MembershipStatus
+) => {
+  return prisma.memberMembership.findMany({
+    where: {
+      member: {
+        gymId,
+      },
+      ...(status && { status }),
+    },
+    include: {
+      member: true,
+      membershipPlan: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 };

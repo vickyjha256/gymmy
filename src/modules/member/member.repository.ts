@@ -1,5 +1,5 @@
 import prisma from "../../config/prisma";
-import { Prisma } from "@prisma/client";
+import { MembershipStatus, Prisma } from "@prisma/client";
 
 export const create = (data: Prisma.MemberCreateInput) => {
   return prisma.member.create({ data });
@@ -177,33 +177,52 @@ export const findMembers = async (
   gymId: string,
   page: number,
   limit: number,
-  search?: string
+  search?: string,
+  membershipEligibility?: "AVAILABLE"
 ) => {
   const skip = (page - 1) * limit;
 
-  const where = {
+  const where: Prisma.MemberWhereInput = {
     gymId,
-    ...(search && {
-      OR: [
-        {
-          firstName: {
-            contains: search,
-            mode: "insensitive" as const,
+
+    ...(search?.trim()
+      ? {
+          OR: [
+            {
+              firstName: {
+                contains: search.trim(),
+                mode: "insensitive",
+              },
+            },
+            {
+              lastName: {
+                contains: search.trim(),
+                mode: "insensitive",
+              },
+            },
+            {
+              phone: {
+                contains: search.trim(),
+              },
+            },
+          ],
+        }
+      : {}),
+
+    ...(membershipEligibility === "AVAILABLE"
+      ? {
+          membershipHistory: {
+            every: {
+              status: {
+                in: [
+                  MembershipStatus.EXPIRED,
+                  MembershipStatus.CANCELLED,
+                ],
+              },
+            },
           },
-        },
-        {
-          lastName: {
-            contains: search,
-            mode: "insensitive" as const,
-          },
-        },
-        {
-          phone: {
-            contains: search,
-          },
-        },
-      ],
-    }),
+        }
+      : {}),
   };
 
   const [members, total] = await prisma.$transaction([
@@ -213,7 +232,10 @@ export const findMembers = async (
         membershipHistory: {
           where: {
             status: {
-              in: ["ACTIVE", "UPCOMING"],
+              in: [
+                MembershipStatus.ACTIVE,
+                MembershipStatus.UPCOMING,
+              ],
             },
           },
           include: {

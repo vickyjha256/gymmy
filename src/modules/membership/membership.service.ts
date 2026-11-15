@@ -186,3 +186,11 @@ export const getMembershipById = async (
 
   return membership;
 };
+
+
+export const getAllMemberships = async (
+  gymId: string,
+  status?: MembershipStatus
+) => {
+  return membershipRepository.findAllByGym(gymId, status);
+};

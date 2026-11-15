@@ -14,6 +14,14 @@ router.post(
 
 
 router.get(
+  "/",
+  authenticate,
+  authorize(UserRole.OWNER),
+  membershipController.getAllMemberships
+);
+
+
+router.get(
   "/member/:memberId",
   authenticate,
   authorize(UserRole.OWNER),
@@ -47,5 +55,8 @@ router.get(
   authorize(UserRole.OWNER),
   membershipController.getMembershipById
 );
+
+
+
 
 export default router;

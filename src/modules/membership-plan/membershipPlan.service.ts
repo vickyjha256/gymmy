@@ -111,3 +111,23 @@ export const activateMembershipPlan = async (
 
   return membershipPlanRepository.activate(planId);
 };
+
+
+
+
+export const deactivateMembershipPlan = async (
+  gymId: string,
+  planId: string
+) => {
+  const plan = await membershipPlanRepository.findById(planId);
+
+  if (!plan || plan.gymId !== gymId) {
+    throw new AppError("Membership plan not found.", 404);
+  }
+
+  if (!plan.isActive) {
+    throw new AppError("Membership plan is already inactive.", 400);
+  }
+
+  return membershipPlanRepository.deactivate(planId);
+};

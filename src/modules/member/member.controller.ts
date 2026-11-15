@@ -39,16 +39,30 @@ export const getMembers = async (
   next: NextFunction
 ) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
-    const search = req.query.search ? String(req.query.search) : undefined;
-    
+    const page = Math.max(
+      1,
+      Number(req.query.page) || 1
+    );
+
+    const limit = Math.min(
+      100,
+      Math.max(1, Number(req.query.limit) || 10)
+    );
+
+    const search = req.query.search
+      ? String(req.query.search)
+      : undefined;
+
+    const membershipEligibility = req.query.membershipEligibility
+      ? String(req.query.membershipEligibility)
+      : undefined;
 
     const result = await memberService.getMembers(
       req.user!.gymId,
       page,
       limit,
-      search
+      search,
+      membershipEligibility
     );
 
     res.status(200).json({

@@ -34,7 +34,8 @@ export const getMembers = async (
   gymId: string,
   page: number,
   limit: number,
-  search?: string
+  search?: string,
+  membershipEligibility?: string
 ) => {
   if (page < 1) {
     throw new AppError("Page must be at least 1.", 400);
@@ -47,14 +48,26 @@ export const getMembers = async (
     );
   }
 
+  if (
+    membershipEligibility &&
+    membershipEligibility !== "AVAILABLE"
+  ) {
+    throw new AppError(
+      "Invalid membership eligibility filter.",
+      400
+    );
+  }
+
   return memberRepository.findMembers(
     gymId,
     page,
     limit,
-    search
+    search,
+    membershipEligibility === "AVAILABLE"
+      ? "AVAILABLE"
+      : undefined
   );
 };
-
 
 export const getMemberById = async (
   gymId: string,

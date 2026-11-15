@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import * as membershipService from "./membership.service";
 import { createMembershipSchema, renewMembershipSchema } from "./membership.validation";
 import { AppError } from "../../common/utils/AppError";
+import { MembershipStatus } from "@prisma/client";
 
 
 type MembershipParams = {
@@ -160,6 +161,40 @@ export const getMembershipById = async (
     res.status(200).json({
       success: true,
       data: membership,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+export const getAllMemberships = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const status = req.query.status;
+
+    if (
+      status !== undefined &&
+      (typeof status !== "string" ||
+        !Object.values(MembershipStatus).includes(
+          status as MembershipStatus
+        ))
+    ) {
+      throw new AppError("Invalid membership status.", 400);
+    }
+
+    const memberships = await membershipService.getAllMemberships(
+      req.user!.gymId,
+      status as MembershipStatus | undefined
+    );
+
+    res.status(200).json({
+      success: true,
+      data: memberships,
     });
   } catch (error) {
     next(error);
